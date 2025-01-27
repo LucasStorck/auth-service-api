@@ -1,7 +1,5 @@
 HELP.md
 
-Dockerfile
-docker-compose.yml
 /target/
 /node_modules/
 *.log
