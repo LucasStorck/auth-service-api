@@ -15,6 +15,8 @@
 # Configurando a Chave Pública e Chave Privada
 Para configurar as chaves para autenticação via JWT, siga as instruções abaixo:
 
+- Crie um diretório `jwt` dentro da pasta `resources`
+
 - Acesse o diretório `jwt` dentro da pasta `resources`:
 ```
 cd \src\main\resources\jwt>
