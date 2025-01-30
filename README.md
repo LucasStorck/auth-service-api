@@ -52,7 +52,7 @@ Depois de realizar essas configurações, execute o seguinte comando para subir 
 ```
 docker-compose up -d
 ```
-# Comfigurando o Swagger
+# Configurando o Swagger
 
 Após configurar o Docker e subir os containers, você pode acessar a documentação interativa do Swagger no seguinte link:
 ```
