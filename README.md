@@ -28,7 +28,7 @@ openssl genpkey -algorithm RSA -out app.key -outform PEM
 openssl rsa -pubout -in app.key -out app.pub
 ```
 
-# Comfigurando o Docker
+# Configurando o Docker
 Para criar a imagem do Docker, siga os passos:
 
 ### 1. Configuração do Dockerfile
