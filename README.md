@@ -12,7 +12,7 @@
 - Swagger
 - Docker
 
-# Comfigurando a Chave Pública e Chave Privada
+# Configurando a Chave Pública e Chave Privada
 Para configurar as chaves para autenticação via JWT, siga as instruções abaixo:
 
 - Acesse o diretório `jwt` dentro da pasta `resources`:
