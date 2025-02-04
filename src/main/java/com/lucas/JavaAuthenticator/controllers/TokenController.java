@@ -4,6 +4,7 @@ import com.lucas.JavaAuthenticator.dtos.LoginRequestDto;
 import com.lucas.JavaAuthenticator.dtos.LoginResponseDto;
 import com.lucas.JavaAuthenticator.entities.Role;
 import com.lucas.JavaAuthenticator.repositories.UseRepository;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -30,6 +31,8 @@ public class TokenController {
   @Autowired
   private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+  @Operation(summary = "Login dos usuários",
+          description = "Esse método é responsável por realizar o login dos usuários via username, email e senha")
   @PostMapping("/api/login")
   public ResponseEntity<LoginResponseDto> loginResponse(@RequestBody LoginRequestDto loginRequest) {
     var userRepository = useRepository.findByUsername(loginRequest.username());

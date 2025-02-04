@@ -5,6 +5,7 @@ import com.lucas.JavaAuthenticator.entities.Role;
 import com.lucas.JavaAuthenticator.entities.User;
 import com.lucas.JavaAuthenticator.repositories.RoleRepository;
 import com.lucas.JavaAuthenticator.repositories.UseRepository;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.annotation.processing.Generated;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -31,6 +32,8 @@ public class UserController {
   @Autowired
   private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+  @Operation(summary = "Criar novo usuário",
+          description = "Esse método é responsável por criar novos usuários, informando o username, email e senha.")
   @PostMapping("/api/user")
   @Transactional
   public ResponseEntity<Void> postUsers(@RequestBody CreateUserDto createUserDto) {
@@ -59,6 +62,8 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
+  @Operation(summary = "Listar todos os usuários",
+          description = "Esse método retorna todos os usuários cadastrados no sistema. Apenas usuários com autoridade 'SUPERUSER' podem acessar esse método.")
   @GetMapping("/api/user")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
   public ResponseEntity<List<User>> listUsers() {
@@ -66,6 +71,16 @@ public class UserController {
     return ResponseEntity.ok(users);
   }
 
+  @Operation(summary = "Recuperar usuários pelo seu username",
+          description = "Esse método retorna apenas um usuário escolhido pelo seu username. Apenas usuários com autoridade 'SUPERUSER' podem acessar esse método.")
+  @GetMapping("/api/user/{username}")
+  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
+  public Optional<User> listUserByUsername(@PathVariable String username) {
+    return useRepository.findByUsername(username);
+  }
+
+  @Operation(summary = "Atualizar usuário pelo seu username",
+          description = "Esse método é responsável por atualizar as informações do usuário pelo username fornecido. Tanto usuários 'SUPERUSER' e 'USER' podem acessar esse método.")
   @PutMapping("/api/user/{username}")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
   @Transactional
@@ -95,6 +110,8 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
+  @Operation(summary = "Deletar usuário pelo seu username",
+          description = "Esse método é responsável por deletar os usuários pelo seu username. Tanto usuários 'SUPERUSER' e 'USER' podem acessar esse método.")
   @DeleteMapping("/api/user/{username}")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
   @Transactional
