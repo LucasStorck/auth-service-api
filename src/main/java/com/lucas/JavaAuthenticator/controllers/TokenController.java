@@ -22,14 +22,15 @@ import java.util.stream.Collectors;
 @RestController
 public class TokenController {
 
-  @Autowired
-  private JwtEncoder jwtEncoder;
+  private final JwtEncoder jwtEncoder;
+  private final UseRepository useRepository;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  @Autowired
-  private UseRepository useRepository;
-
-  @Autowired
-  private BCryptPasswordEncoder bCryptPasswordEncoder;
+  public TokenController(JwtEncoder jwtEncoder, UseRepository useRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    this.jwtEncoder = jwtEncoder;
+    this.useRepository = useRepository;
+    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+  }
 
   @Operation(summary = "Login dos usuários",
           description = "Esse método é responsável por realizar o login dos usuários via username, email e senha")

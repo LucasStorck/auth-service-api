@@ -23,14 +23,15 @@ import java.util.Set;
 @RestController
 public class UserController {
 
-  @Autowired
-  private UseRepository useRepository;
+  private final UseRepository useRepository;
+  private final RoleRepository roleRepository;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  @Autowired
-  private RoleRepository roleRepository;
-
-  @Autowired
-  private BCryptPasswordEncoder bCryptPasswordEncoder;
+  public UserController(UseRepository useRepository, RoleRepository roleRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    this.useRepository = useRepository;
+    this.roleRepository = roleRepository;
+    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+  }
 
   @Operation(summary = "Criar novo usuário",
           description = "Esse método é responsável por criar novos usuários, informando o username, email e senha.")
