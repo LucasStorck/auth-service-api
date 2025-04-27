@@ -87,3 +87,13 @@ Após configurar o Docker e subir os containers, você pode acessar a documenta�
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
+## Considerações
+Este projeto foi desenvolvido com o objetivo de consolidar conceitos fundamentais de:
+
+- Programação Orientada a Objetos (POO)
+- Desenvolvimento de APIs RESTful
+- Boas práticas de desenvolvimento
+- Conteinerização via Docker
+- Versionamento de banco de dados via Flyway
+
+**_Desenvolvido por Lucas Storck_**
