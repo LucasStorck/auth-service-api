@@ -5,7 +5,8 @@ import com.lucas.JavaAuthenticator.dtos.LoginResponseDto;
 import com.lucas.JavaAuthenticator.entities.Role;
 import com.lucas.JavaAuthenticator.repositories.UseRepository;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,8 +33,15 @@ public class TokenController {
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
 
-  @Operation(summary = "Login dos usuários",
-          description = "Esse método é responsável por realizar o login dos usuários via username, email e senha")
+  @Operation(
+          summary = "User Login",
+          description = "This method is responsible for authenticating users via their username, email, and password."
+  )
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "Successful login, returns JWT token."),
+          @ApiResponse(responseCode = "401", description = "Invalid username, email, or password."),
+          @ApiResponse(responseCode = "400", description = "Bad request.")
+  })
   @PostMapping("/api/login")
   public ResponseEntity<LoginResponseDto> loginResponse(@RequestBody LoginRequestDto loginRequest) {
     var userRepository = useRepository.findByUsername(loginRequest.username());

@@ -33,11 +33,13 @@ public class UserController {
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
 
-  @Operation(summary = "Criar novo usuário",
-          description = "Esse método é responsável por criar novos usuários, informando o username, email e senha.")
+  @Operation(
+          summary = "Create a new user",
+          description = "This method is responsible for creating new users by providing a username, email, and password."
+  )
   @PostMapping("/api/user")
   @Transactional
-  public ResponseEntity<Void> postUsers(@RequestBody CreateUserDto createUserDto) {
+  public ResponseEntity<Void> createUser(@RequestBody CreateUserDto createUserDto) {
     var user = roleRepository.findByName(Role.Values.USER.name());
     var userRepository = useRepository.findByUsername(createUserDto.username());
 
@@ -63,25 +65,31 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
-  @Operation(summary = "Listar todos os usuários",
-          description = "Esse método retorna todos os usuários cadastrados no sistema. Apenas usuários com autoridade 'SUPERUSER' podem acessar esse método.")
+  @Operation(
+          summary = "List all users",
+          description = "This method returns a list of all users in the system. Only users with the 'SUPERUSER' authority can access this method."
+  )
   @GetMapping("/api/user")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
-  public ResponseEntity<List<User>> listUsers() {
+  public ResponseEntity<List<User>> getUser() {
     var users = useRepository.findAll();
     return ResponseEntity.ok(users);
   }
 
-  @Operation(summary = "Recuperar usuários pelo seu username",
-          description = "Esse método retorna apenas um usuário escolhido pelo seu username. Apenas usuários com autoridade 'SUPERUSER' podem acessar esse método.")
+  @Operation(
+          summary = "Get a user by their username",
+          description = "This method returns a user selected by their username. Only users with the 'SUPERUSER' authority can access this method."
+  )
   @GetMapping("/api/user/{username}")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
-  public Optional<User> listUserByUsername(@PathVariable String username) {
+  public Optional<User> getUserByUsername(@PathVariable String username) {
     return useRepository.findByUsername(username);
   }
 
-  @Operation(summary = "Atualizar usuário pelo seu username",
-          description = "Esse método é responsável por atualizar as informações do usuário pelo username fornecido. Tanto usuários 'SUPERUSER' e 'USER' podem acessar esse método.")
+  @Operation(
+          summary = "Update a user by their username",
+          description = "This method is responsible for updating a user's information by the provided username. Both 'SUPERUSER' and 'USER' roles can access this method."
+  )
   @PutMapping("/api/user/{username}")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
   @Transactional
@@ -111,8 +119,10 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
-  @Operation(summary = "Deletar usuário pelo seu username",
-          description = "Esse método é responsável por deletar os usuários pelo seu username. Tanto usuários 'SUPERUSER' e 'USER' podem acessar esse método.")
+  @Operation(
+          summary = "Delete a user by their username",
+          description = "This method is responsible for deleting a user by their username. Both 'SUPERUSER' and 'USER' roles can access this method."
+  )
   @DeleteMapping("/api/user/{username}")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
   @Transactional

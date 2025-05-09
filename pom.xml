@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.lucas</groupId>
-	<artifactId>JavaAuthenticator</artifactId>
+	<artifactId>auth-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>JavaAuthenticator</name>
 	<description>Authenticator API </description>

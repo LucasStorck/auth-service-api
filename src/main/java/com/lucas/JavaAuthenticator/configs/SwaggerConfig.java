@@ -15,9 +15,9 @@ public class SwaggerConfig {
   public OpenAPI openAPI() {
     return new OpenAPI()
             .info(new Info()
-                    .title("Registro e Autenticação de Usuários")
-                    .version("v1.0")
-                    .description("Sistema de registro e autenticação de usuários, desenvolvido com Spring Security, integrando autenticação baseada em JWT (JSON Web Tokens) e OAUTH 2.0.")
+                    .title("User Registration and Authentication")
+                    .version("v1.5")
+                    .description("Registration and Authentication System with Spring Security and OAuth 2.0")
             )
             .components(new Components()
                     .addSecuritySchemes("bearerAuth", new SecurityScheme()

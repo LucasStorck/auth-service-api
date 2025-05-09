@@ -15,14 +15,17 @@ import java.util.Set;
 @Configuration
 public class SuperuserConfig implements CommandLineRunner {
 
-  @Autowired
-  private RoleRepository roleRepository;
+  private final RoleRepository roleRepository;
 
-  @Autowired
-  private UseRepository useRepository;
+  private final UseRepository useRepository;
 
-  @Autowired
-  private BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+  public SuperuserConfig(RoleRepository roleRepository, UseRepository useRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    this.roleRepository = roleRepository;
+    this.useRepository = useRepository;
+    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+  }
 
   @Override
   @Transactional
