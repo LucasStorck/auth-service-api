@@ -2,11 +2,11 @@ package com.lucas.JavaAuthenticator.controllers;
 
 import com.lucas.JavaAuthenticator.dtos.CreateUserDto;
 import com.lucas.JavaAuthenticator.entities.Role;
+import com.lucas.JavaAuthenticator.entities.RoleType;
 import com.lucas.JavaAuthenticator.entities.User;
 import com.lucas.JavaAuthenticator.repositories.RoleRepository;
-import com.lucas.JavaAuthenticator.repositories.UseRepository;
+import com.lucas.JavaAuthenticator.repositories.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,12 +23,12 @@ import java.util.Set;
 @RestController
 public class UserController {
 
-  private final UseRepository useRepository;
+  private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  public UserController(UseRepository useRepository, RoleRepository roleRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
-    this.useRepository = useRepository;
+  public UserController(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
@@ -40,8 +40,8 @@ public class UserController {
   @PostMapping("/api/user")
   @Transactional
   public ResponseEntity<Void> createUser(@RequestBody CreateUserDto createUserDto) {
-    var user = roleRepository.findByName(Role.Values.USER.name());
-    var userRepository = useRepository.findByUsername(createUserDto.username());
+    var user = roleRepository.findByName(RoleType.USER.name());
+    var userRepository = this.userRepository.findByUsername(createUserDto.username());
 
     if (userRepository.isPresent()) {
       throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -49,7 +49,7 @@ public class UserController {
 
     if (user == null) {
       user = new Role();
-      user.setName(Role.Values.USER.name());
+      user.setName(RoleType.USER.name());
       roleRepository.save(user);
     }
 
@@ -60,7 +60,7 @@ public class UserController {
     newUser.setPassword(bCryptPasswordEncoder.encode(createUserDto.password()));
     newUser.setRoles(Set.of(user));
 
-    useRepository.save(newUser);
+    this.userRepository.save(newUser);
 
     return ResponseEntity.ok().build();
   }
@@ -72,7 +72,7 @@ public class UserController {
   @GetMapping("/api/user")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
   public ResponseEntity<List<User>> getUser() {
-    var users = useRepository.findAll();
+    var users = userRepository.findAll();
     return ResponseEntity.ok(users);
   }
 
@@ -83,7 +83,7 @@ public class UserController {
   @GetMapping("/api/user/{username}")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
   public Optional<User> getUserByUsername(@PathVariable String username) {
-    return useRepository.findByUsername(username);
+    return userRepository.findByUsername(username);
   }
 
   @Operation(
@@ -94,7 +94,7 @@ public class UserController {
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
   @Transactional
   public ResponseEntity<Void> updateUser(@PathVariable String username, @RequestBody CreateUserDto createUserDto, JwtAuthenticationToken token) {
-    var user = useRepository.findByUsername(username);
+    var user = userRepository.findByUsername(username);
 
     if (user.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -109,13 +109,13 @@ public class UserController {
     }
 
     if (!updateUser.getUsername().equals(createUserDto.username())) {
-      var existingUser = useRepository.findByUsername(createUserDto.username());
+      var existingUser = userRepository.findByUsername(createUserDto.username());
       if (existingUser.isPresent()) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, "THIS USERNAME ALREADY EXIST");
       }
     }
 
-    useRepository.save(updateUser);
+    userRepository.save(updateUser);
     return ResponseEntity.ok().build();
   }
 
@@ -127,14 +127,14 @@ public class UserController {
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
   @Transactional
   public ResponseEntity<Void> deleteUser(@PathVariable String username) {
-    var user = useRepository.findByUsername(username);
-    var authorization = useRepository.findByUsername(username);
+    var user = userRepository.findByUsername(username);
+    var authorization = userRepository.findByUsername(username);
 
     if (user.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    useRepository.delete(user.get());
+    userRepository.delete(user.get());
 
     return ResponseEntity.noContent().build();
   }

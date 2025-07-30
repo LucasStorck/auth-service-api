@@ -2,11 +2,6 @@ package com.lucas.JavaAuthenticator.entities;
 
 import com.lucas.JavaAuthenticator.dtos.LoginRequestDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,107 +12,113 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@AllArgsConstructor
-@NoArgsConstructor
 @EnableJpaAuditing
 public class User {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  @Column(name = "user_id", nullable = false)
-  private UUID id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "user_id", nullable = false)
+    private UUID id;
 
-  @Column(name = "username", nullable = false, unique = true)
-  private String username;
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
 
-  @Column(name = "email", nullable = false, unique = true)
-  private String email;
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
 
-  @Column(name = "password", nullable = false)
-  private String password;
+    @Column(name = "password", nullable = false)
+    private String password;
 
-  @Column(name = "created_at", nullable = false, updatable = false)
-  @CreatedDate
-  private Instant createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreatedDate
+    private Instant createdAt;
 
-  @Column(name = "updated_at")
-  private Instant updatedAt;
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 
-  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-  @JoinTable(
-          name = "user_roles",
-          joinColumns = @JoinColumn(name = "user_id"),
-          inverseJoinColumns = @JoinColumn(name = "role_id")
-  )
-  private Set<Role> roles;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles;
 
-  public UUID getId() {
-    return id;
-  }
+    public User() {
+    }
 
-  public void setId(UUID id) {
-    this.id = id;
-  }
+    public User(String username, String email, String password, Instant createdAt, Instant updatedAt, Set<Role> roles) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.roles = roles;
+    }
 
-  public String getUsername() {
-    return username;
-  }
+    public UUID getId() {
+        return id;
+    }
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
+    public String getUsername() {
+        return username;
+    }
 
-  public String getEmail() {
-    return email;
-  }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-  public void setEmail(String email) {
-    this.email = email;
-  }
+    public String getEmail() {
+        return email;
+    }
 
-  public String getPassword() {
-    return password;
-  }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+    public String getPassword() {
+        return password;
+    }
 
-  public Instant getCreatedAt() {
-    return createdAt;
-  }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
-  }
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 
-  public Instant getUpdatedAt() {
-    return updatedAt;
-  }
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
 
-  public void setUpdatedAt(Instant updatedAt) {
-    this.updatedAt = updatedAt;
-  }
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
 
-  public Set<Role> getRoles() {
-    return roles;
-  }
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
-  public void setRoles(Set<Role> roles) {
-    this.roles = roles;
-  }
+    public Set<Role> getRoles() {
+        return roles;
+    }
 
-  @PrePersist
-  public void prePersist() {
-    this.createdAt = Instant.now();
-  }
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
 
-  @PreUpdate
-  public void preUpdate() {
-    this.updatedAt = Instant.now();
-  }
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = Instant.now();
+    }
 
-  public boolean isLoginIncorrect(LoginRequestDto loginRequest, PasswordEncoder passwordEncoder) {
-    return !passwordEncoder.matches(loginRequest.password(), this.password);
-  }
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
+    public boolean isLoginIncorrect(LoginRequestDto loginRequest, PasswordEncoder passwordEncoder) {
+        return !passwordEncoder.matches(loginRequest.password(), this.password);
+    }
 }

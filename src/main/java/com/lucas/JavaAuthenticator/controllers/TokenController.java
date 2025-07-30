@@ -3,7 +3,7 @@ package com.lucas.JavaAuthenticator.controllers;
 import com.lucas.JavaAuthenticator.dtos.LoginRequestDto;
 import com.lucas.JavaAuthenticator.dtos.LoginResponseDto;
 import com.lucas.JavaAuthenticator.entities.Role;
-import com.lucas.JavaAuthenticator.repositories.UseRepository;
+import com.lucas.JavaAuthenticator.repositories.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 public class TokenController {
 
   private final JwtEncoder jwtEncoder;
-  private final UseRepository useRepository;
+  private final UserRepository userRepository;
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  public TokenController(JwtEncoder jwtEncoder, UseRepository useRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+  public TokenController(JwtEncoder jwtEncoder, UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
     this.jwtEncoder = jwtEncoder;
-    this.useRepository = useRepository;
+    this.userRepository = userRepository;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
 
@@ -44,7 +44,7 @@ public class TokenController {
   })
   @PostMapping("/api/login")
   public ResponseEntity<LoginResponseDto> loginResponse(@RequestBody LoginRequestDto loginRequest) {
-    var userRepository = useRepository.findByUsername(loginRequest.username());
+    var userRepository = this.userRepository.findByUsername(loginRequest.username());
 
     if (userRepository.isEmpty() || userRepository.get().isLoginIncorrect(loginRequest, bCryptPasswordEncoder)) {
       throw new BadCredentialsException("USER, EMAIL OR PASSWORD IS INCORRECT");

@@ -1,10 +1,9 @@
 package com.lucas.JavaAuthenticator.configs;
 
-import com.lucas.JavaAuthenticator.entities.Role;
+import com.lucas.JavaAuthenticator.entities.RoleType;
 import com.lucas.JavaAuthenticator.entities.User;
 import com.lucas.JavaAuthenticator.repositories.RoleRepository;
-import com.lucas.JavaAuthenticator.repositories.UseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.lucas.JavaAuthenticator.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,22 +16,22 @@ public class SuperuserConfig implements CommandLineRunner {
 
   private final RoleRepository roleRepository;
 
-  private final UseRepository useRepository;
+  private final UserRepository userRepository;
 
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  public SuperuserConfig(RoleRepository roleRepository, UseRepository useRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+  public SuperuserConfig(RoleRepository roleRepository, UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
     this.roleRepository = roleRepository;
-    this.useRepository = useRepository;
+    this.userRepository = userRepository;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
 
   @Override
   @Transactional
   public void run(String... args) throws Exception {
-    var roleSuperuser = roleRepository.findByName(Role.Values.SUPERUSER.name());
+    var roleSuperuser = roleRepository.findByName(RoleType.SUPERUSER.name());
 
-    var userAdmin = useRepository.findByUsername("superuser");
+    var userAdmin = userRepository.findByUsername("superuser");
 
     userAdmin.ifPresentOrElse(
             (user) -> {
@@ -44,7 +43,7 @@ public class SuperuserConfig implements CommandLineRunner {
               user.setEmail("superuser@email.com");
               user.setPassword(bCryptPasswordEncoder.encode("123"));
               user.setRoles(Set.of(roleSuperuser));
-              useRepository.save(user);
+              userRepository.save(user);
             }
     );
   }

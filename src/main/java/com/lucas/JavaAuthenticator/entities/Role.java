@@ -1,15 +1,9 @@
 package com.lucas.JavaAuthenticator.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "roles")
-@AllArgsConstructor
-@NoArgsConstructor
 public class Role {
 
   @Id
@@ -36,14 +30,5 @@ public class Role {
     this.name = name;
   }
 
-  public enum Values {
-    SUPERUSER(2L),
-    USER(1L);
-
-    final long roleId;
-
-    Values(long roleId) {
-      this.roleId = roleId;
-    }
-  }
+  public Role() {}
 }
