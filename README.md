@@ -1,5 +1,5 @@
-# Sistema de Registro e Autenticação de Usuários
-Sistema de registro e autenticação de usuários, desenvolvido com Spring Security 6, integrando autenticação baseada em JWT (JSON Web Tokens) e OAUTH 2.0.
+# Sistema de Autenticação e Autorização de Usuários
+Sistema de autenticação e utorização de usuários, desenvolvido com Spring Security 6, integrando autenticação baseada em JWT (JSON Web Tokens) e OAUTH 2.0.
 
 ## Tecnologias
 
