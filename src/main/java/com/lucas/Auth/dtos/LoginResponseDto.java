@@ -1,4 +1,4 @@
-package com.lucas.JavaAuthenticator.dtos;
+package com.lucas.Auth.dtos;
 
 public record LoginResponseDto (String accessToken, Long expiresIn) {
 }

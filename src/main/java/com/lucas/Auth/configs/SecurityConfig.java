@@ -1,4 +1,4 @@
-package com.lucas.JavaAuthenticator.configs;
+package com.lucas.Auth.configs;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;

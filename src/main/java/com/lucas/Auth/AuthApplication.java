@@ -1,13 +1,13 @@
-package com.lucas.JavaAuthenticator;
+package com.lucas.Auth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Auth {
+public class AuthApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Auth.class, args);
+		SpringApplication.run(AuthApplication.class, args);
 	}
 
 }

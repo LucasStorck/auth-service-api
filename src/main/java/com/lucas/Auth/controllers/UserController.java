@@ -1,11 +1,11 @@
-package com.lucas.JavaAuthenticator.controllers;
+package com.lucas.Auth.controllers;
 
-import com.lucas.JavaAuthenticator.dtos.CreateUserDto;
-import com.lucas.JavaAuthenticator.entities.Role;
-import com.lucas.JavaAuthenticator.entities.RoleType;
-import com.lucas.JavaAuthenticator.entities.User;
-import com.lucas.JavaAuthenticator.repositories.RoleRepository;
-import com.lucas.JavaAuthenticator.repositories.UserRepository;
+import com.lucas.Auth.dtos.CreateUserDto;
+import com.lucas.Auth.entities.Role;
+import com.lucas.Auth.entities.RoleType;
+import com.lucas.Auth.entities.User;
+import com.lucas.Auth.repositories.RoleRepository;
+import com.lucas.Auth.repositories.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

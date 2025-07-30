@@ -1,4 +1,4 @@
-package com.lucas.JavaAuthenticator.configs;
+package com.lucas.Auth.configs;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

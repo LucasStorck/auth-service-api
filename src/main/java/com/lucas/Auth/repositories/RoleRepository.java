@@ -1,6 +1,6 @@
-package com.lucas.JavaAuthenticator.repositories;
+package com.lucas.Auth.repositories;
 
-import com.lucas.JavaAuthenticator.entities.Role;
+import com.lucas.Auth.entities.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

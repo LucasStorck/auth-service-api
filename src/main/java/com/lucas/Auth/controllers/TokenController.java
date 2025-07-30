@@ -1,9 +1,9 @@
-package com.lucas.JavaAuthenticator.controllers;
+package com.lucas.Auth.controllers;
 
-import com.lucas.JavaAuthenticator.dtos.LoginRequestDto;
-import com.lucas.JavaAuthenticator.dtos.LoginResponseDto;
-import com.lucas.JavaAuthenticator.entities.Role;
-import com.lucas.JavaAuthenticator.repositories.UserRepository;
+import com.lucas.Auth.dtos.LoginRequestDto;
+import com.lucas.Auth.dtos.LoginResponseDto;
+import com.lucas.Auth.entities.Role;
+import com.lucas.Auth.repositories.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -1,4 +1,4 @@
-package com.lucas.JavaAuthenticator.entities;
+package com.lucas.Auth.entities;
 
 public enum RoleType {
     SUPERUSER(2L),

@@ -1,4 +1,4 @@
-package com.lucas.JavaAuthenticator.entities;
+package com.lucas.Auth.entities;
 
 import jakarta.persistence.*;
 

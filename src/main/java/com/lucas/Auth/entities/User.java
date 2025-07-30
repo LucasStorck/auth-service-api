@@ -1,6 +1,6 @@
-package com.lucas.JavaAuthenticator.entities;
+package com.lucas.Auth.entities;
 
-import com.lucas.JavaAuthenticator.dtos.LoginRequestDto;
+import com.lucas.Auth.dtos.LoginRequestDto;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
