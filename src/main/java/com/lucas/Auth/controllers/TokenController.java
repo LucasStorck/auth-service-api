@@ -2,71 +2,83 @@ package com.lucas.Auth.controllers;
 
 import com.lucas.Auth.dtos.LoginRequestDto;
 import com.lucas.Auth.dtos.LoginResponseDto;
-import com.lucas.Auth.entities.Role;
+import com.lucas.Auth.dtos.RefreshRequestDto;
+import com.lucas.Auth.entities.User;
 import com.lucas.Auth.repositories.UserRepository;
+import com.lucas.Auth.services.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @RestController
 public class TokenController {
 
-  private final JwtEncoder jwtEncoder;
+  private final JwtService jwtService;
+  private final AuthenticationManager authenticationManager;
   private final UserRepository userRepository;
-  private final BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final JwtDecoder jwtDecoder;
 
-  public TokenController(JwtEncoder jwtEncoder, UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
-    this.jwtEncoder = jwtEncoder;
+  public TokenController(JwtService jwtService, AuthenticationManager authenticationManager, UserRepository userRepository, JwtDecoder jwtDecoder) {
+    this.jwtService = jwtService;
+    this.authenticationManager = authenticationManager;
     this.userRepository = userRepository;
-    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    this.jwtDecoder = jwtDecoder;
   }
 
   @Operation(
           summary = "User Login",
-          description = "This method is responsible for authenticating users via their username, email, and password."
+          description = "Authenticates user and returns access and refresh tokens."
   )
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Successful login, returns JWT token."),
-          @ApiResponse(responseCode = "401", description = "Invalid username, email, or password."),
-          @ApiResponse(responseCode = "400", description = "Bad request.")
+          @ApiResponse(responseCode = "200", description = "Successful login."),
+          @ApiResponse(responseCode = "401", description = "Invalid credentials.")
   })
   @PostMapping("/api/login")
-  public ResponseEntity<LoginResponseDto> loginResponse(@RequestBody LoginRequestDto loginRequest) {
-    var userRepository = this.userRepository.findByUsername(loginRequest.username());
+  public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequest) {
+    var authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
+    );
 
-    if (userRepository.isEmpty() || userRepository.get().isLoginIncorrect(loginRequest, bCryptPasswordEncoder)) {
-      throw new BadCredentialsException("USER, EMAIL OR PASSWORD IS INCORRECT");
+    var user = userRepository.findByUsername(loginRequest.username())
+            .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+    var accessToken = jwtService.generateAccessToken(user);
+    var refreshToken = jwtService.generateRefreshToken(user);
+
+    return ResponseEntity.ok(new LoginResponseDto(accessToken, refreshToken, 300L));
+  }
+
+  @Operation(
+          summary = "Refresh Token",
+          description = "Generates a new access token using a valid refresh token."
+  )
+  @PostMapping("/api/refresh")
+  public ResponseEntity<LoginResponseDto> refresh(@RequestBody RefreshRequestDto refreshRequest) {
+    try {
+      Jwt jwt = jwtDecoder.decode(refreshRequest.refreshToken());
+      String userId = jwt.getSubject();
+
+      User user = userRepository.findById(UUID.fromString(userId))
+              .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+      var accessToken = jwtService.generateAccessToken(user);
+      // Opcional: rotacionar o refresh token aqui também
+      
+      return ResponseEntity.ok(new LoginResponseDto(accessToken, refreshRequest.refreshToken(), 300L));
+    } catch (JwtException e) {
+      throw new BadCredentialsException("Invalid refresh token");
     }
-
-    var now = Instant.now();
-    var expiresIn = 300L;
-
-    var scopes = userRepository.get().getRoles()
-            .stream()
-            .map(Role::getName)
-            .collect(Collectors.joining(" "));
-
-    var claims = JwtClaimsSet.builder()
-            .issuer("my-backend")
-            .subject(userRepository.get().getId().toString())
-            .issuedAt(now)
-            .expiresAt(now.plusSeconds(expiresIn))
-            .claim("scope", scopes)
-            .build();
-    var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-
-    return ResponseEntity.ok(new LoginResponseDto(jwtValue, expiresIn));
   }
 }

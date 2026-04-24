@@ -3,7 +3,6 @@ package com.lucas.Auth.entities;
 import com.lucas.Auth.dtos.LoginRequestDto;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
@@ -12,7 +11,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@EnableJpaAuditing
 public class User {
 
     @Id

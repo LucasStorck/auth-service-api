@@ -1,99 +1,102 @@
 # Sistema de Autenticação e Autorização de Usuários
-Sistema de autenticação e utorização de usuários, desenvolvido com Spring Security 6, integrando autenticação baseada em JWT (JSON Web Tokens) e OAUTH 2.0.
+Sistema de autenticação e autorização de usuários, desenvolvido com Spring Security 6, integrando autenticação baseada em JWT (JSON Web Tokens) e OAUTH 2.0 (Resource Server).
 
-## Tecnologias
+## 🚀 Novas Funcionalidades e Melhorias
+Recentemente o projeto passou por uma refatoração para adotar padrões de mercado e aumentar a segurança:
+- **Gestão de Sessão via Refresh Tokens**: Renovação automática de acesso sem novo login.
+- **Segurança Refatorada**: Uso de `AuthenticationManager` e `UserDetailsService`.
+- **Proteção contra BOLA**: Restrição de acesso a dados de outros usuários (Broken Object Level Authorization).
+- **Validação de Dados**: Uso de Bean Validation para garantir integridade dos inputs.
 
-- Java 21
-- Spring
-- Spring Security
-- Oauth 2.0
-- PostgreSQL
-- Flyway
-- Swagger
-- Docker
+## 🛠 Tecnologias
+- **Java 21**
+- **Spring Boot 3.4**
+- **Spring Security**
+- **OAuth 2.0 (Resource Server)**
+- **PostgreSQL**
+- **Flyway** (Migration)
+- **Swagger (OpenAPI 3)**
+- **Docker & Docker Compose**
 
-# Configurando a Chave Pública e Chave Privada
+## 🏗 Arquitetura do Sistema
+Abaixo está o diagrama de classes representando a estrutura principal do serviço de autenticação, destacando as relações de **dependência** e **realização**.
+
+```mermaid
+classDiagram
+    direction TB
+    
+    class UserDetailsService {
+        <<interface>>
+        +loadUserByUsername(String) UserDetails
+    }
+
+    class UserDetailsServiceImpl {
+        -UserRepository userRepository
+        +loadUserByUsername(String) UserDetails
+    }
+
+    class JwtService {
+        -JwtEncoder jwtEncoder
+        +generateAccessToken(User) String
+        +generateRefreshToken(User) String
+    }
+
+    class TokenController {
+        -JwtService jwtService
+        -AuthenticationManager authManager
+        -UserRepository userRepository
+        +login(LoginRequestDto) ResponseEntity
+        +refresh(RefreshRequestDto) ResponseEntity
+    }
+
+    class UserController {
+        -UserRepository userRepository
+        -RoleRepository roleRepository
+        -BCryptPasswordEncoder passwordEncoder
+        +createUser(CreateUserDto) ResponseEntity
+        +updateUser(String, UpdateUserDto) ResponseEntity
+        +deleteUser(String) ResponseEntity
+    }
+
+    class SecurityConfig {
+        +securityFilterChain(HttpSecurity) SecurityFilterChain
+        +authenticationManager(AuthConfig) AuthenticationManager
+    }
+
+    %% Relacionamentos de Realização (Interface Implementation)
+    UserDetailsServiceImpl ..|> UserDetailsService : Realização
+
+    %% Relacionamentos de Dependência
+    TokenController ..> JwtService : Dependência
+    TokenController ..> UserRepository : Dependência
+    UserController ..> UserRepository : Dependência
+    UserController ..> RoleRepository : Dependência
+    UserDetailsServiceImpl ..> UserRepository : Dependência
+    SecurityConfig ..> UserDetailsService : Dependência
+```
+
+## 🔑 Configurando a Chave Pública e Chave Privada
 Para configurar as chaves para autenticação via JWT, siga as instruções abaixo.
 
 #### 1. Crie um diretório `jwt` dentro da pasta `resources`
 
-#### 2. Acesse o diretório `jwt` dentro da pasta `resources`:
-```
-cd \src\main\resources\jwt>
-```
-#### 3. Gere da chave pública executando o comando:
-```
+#### 2. Acesse o diretório `jwt` e gere as chaves:
+```bash
 openssl genpkey -algorithm RSA -out app.key -outform PEM
-```
-#### 4. Em seguida, gere a chave privada com o comando:
-```
 openssl rsa -pubout -in app.key -out app.pub
 ```
 
-# Configurando o Docker
-Para criar a imagem do Docker, siga os passos:
+## 🐳 Configurando o Docker
+Para criar a imagem e rodar o projeto:
 
-### 1. Configuração do Dockerfile
-#### 1.1 Execute o comando para criar o pacote do aplicativo (sem rodar os testes).
-  
-```
-mvn clean package -DskipTests
-```
-#### 1.2 Em seguida, execute o comando para criar a imagem Docker:
-```
-docker build -t authenticator .
-```
-### 2. Configuração do Docker Compose
+1. **Gere o JAR**: `mvn clean package -DskipTests`
+2. **Build da Imagem**: `docker build -t authenticator .`
+3. **Subir Containers**: `docker-compose up -d`
 
-#### 2.1 No arquivo `docker-compose.yml`, configure o usuário e a senha de acordo com o que será utilizado no banco de dados.
-```
-services:
-  api:
-    image: authenticator
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-  db:
-    image: postgres:17
-    environment:
-      POSTGRES_USER:
-      POSTGRES_PASSWORD:
-      POSTGRES_DB: users_db
-    ports:
-      - "5432:5432"
-```
-#### 2.2 No arquivo `application.properties`, configure as mesmas credenciais de usuário e senha que você definiu no `docker-compose.yml`.
-```
-spring.application.name=JavaAuthenticator
+## 📖 Documentação (Swagger)
+Acesse a documentação interativa em:
+[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
-jwt.public-key=classpath:jwt/app.pub
-jwt.private-key=classpath:jwt/app.key
-
-spring.datasource.url=jdbc:postgresql://db:5432/users_db
-spring.datasource.username=
-spring.datasource.password=
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-spring.jpa.show-sql=true
-spring.jpa.hibernate.ddl-auto=update
-```
-#### 2.3 Depois de realizar essas configurações, execute o seguinte comando para subir os containers:
-```
-docker-compose up -d
-```
-# Configurando o Swagger
-Após configurar o Docker e subir os containers, você pode acessar a documentação interativa do Swagger no seguinte link
-```
-http://localhost:8080/swagger-ui/index.html
-```
-## Considerações
-Este projeto foi desenvolvido com o objetivo de consolidar conceitos fundamentais de:
-
-- Programação Orientada a Objetos (POO)
-- Desenvolvimento de APIs RESTful
-- Boas práticas de desenvolvimento
-- Conteinerização via Docker
-- Versionamento de banco de dados via Flyway
-
+---
 **_Desenvolvido por Lucas Storck_**
+

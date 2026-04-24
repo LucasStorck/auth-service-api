@@ -23,6 +23,12 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -39,14 +45,32 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     httpSecurity
             .authorizeHttpRequests(authorize -> authorize
-                    .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/refresh").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                     .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                     .anyRequest().authenticated())
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(Customizer.withDefaults())
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     return httpSecurity.build();
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    return authenticationConfiguration.getAuthenticationManager();
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(List.of("*")); // Em produção, mude para domínios específicos
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 
   @Bean

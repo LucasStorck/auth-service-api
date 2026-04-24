@@ -1,6 +1,6 @@
 services:
   api:
-    image: authenticator
+    image: auth
     ports:
       - "8080:8080"
     depends_on:

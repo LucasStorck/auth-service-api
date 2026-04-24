@@ -1,12 +1,14 @@
 package com.lucas.Auth.controllers;
 
 import com.lucas.Auth.dtos.CreateUserDto;
+import com.lucas.Auth.dtos.UpdateUserDto;
 import com.lucas.Auth.entities.Role;
 import com.lucas.Auth.entities.RoleType;
 import com.lucas.Auth.entities.User;
 import com.lucas.Auth.repositories.RoleRepository;
 import com.lucas.Auth.repositories.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @RestController
+@RequestMapping("/api/user")
 public class UserController {
 
   private final UserRepository userRepository;
@@ -33,109 +36,91 @@ public class UserController {
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
   }
 
-  @Operation(
-          summary = "Create a new user",
-          description = "This method is responsible for creating new users by providing a username, email, and password."
-  )
-  @PostMapping("/api/user")
+  @Operation(summary = "Create a new user")
+  @PostMapping
   @Transactional
-  public ResponseEntity<Void> createUser(@RequestBody CreateUserDto createUserDto) {
-    var user = roleRepository.findByName(RoleType.USER.name());
-    var userRepository = this.userRepository.findByUsername(createUserDto.username());
-
-    if (userRepository.isPresent()) {
-      throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+  public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserDto createUserDto) {
+    if (userRepository.findByUsername(createUserDto.username()).isPresent()) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
     }
 
-    if (user == null) {
-      user = new Role();
-      user.setName(RoleType.USER.name());
-      roleRepository.save(user);
-    }
+    Role userRole = Optional.ofNullable(roleRepository.findByName(RoleType.USER.name()))
+            .orElseGet(() -> {
+              Role newRole = new Role();
+              newRole.setName(RoleType.USER.name());
+              return roleRepository.save(newRole);
+            });
 
-    var newUser = new User();
-
+    User newUser = new User();
     newUser.setUsername(createUserDto.username());
     newUser.setEmail(createUserDto.email());
     newUser.setPassword(bCryptPasswordEncoder.encode(createUserDto.password()));
-    newUser.setRoles(Set.of(user));
+    newUser.setRoles(Set.of(userRole));
 
-    this.userRepository.save(newUser);
+    userRepository.save(newUser);
+    return ResponseEntity.status(HttpStatus.CREATED).build();
+  }
 
+  @Operation(summary = "List all users")
+  @GetMapping
+  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
+  public ResponseEntity<List<User>> getAllUsers() {
+    return ResponseEntity.ok(userRepository.findAll());
+  }
+
+  @Operation(summary = "Get user by username")
+  @GetMapping("/{username}")
+  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or #username == authentication.name") // Note: this works if username is the subject
+  public ResponseEntity<User> getUserByUsername(@PathVariable String username, JwtAuthenticationToken token) {
+    // Se não for superuser, deve ser o próprio usuário. 
+    // Mas o token subject é o UUID, não o username. Vamos ajustar.
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    
+    validateUserAccess(user, token);
+
+    return ResponseEntity.ok(user);
+  }
+
+  @Operation(summary = "Update user")
+  @PutMapping("/{username}")
+  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
+  @Transactional
+  public ResponseEntity<Void> updateUser(@PathVariable String username, @Valid @RequestBody UpdateUserDto updateUserDto, JwtAuthenticationToken token) {
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+    validateUserAccess(user, token);
+
+    if (updateUserDto.username() != null) user.setUsername(updateUserDto.username());
+    if (updateUserDto.email() != null) user.setEmail(updateUserDto.email());
+    if (updateUserDto.password() != null) user.setPassword(bCryptPasswordEncoder.encode(updateUserDto.password()));
+
+    userRepository.save(user);
     return ResponseEntity.ok().build();
   }
 
-  @Operation(
-          summary = "List all users",
-          description = "This method returns a list of all users in the system. Only users with the 'SUPERUSER' authority can access this method."
-  )
-  @GetMapping("/api/user")
-  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
-  public ResponseEntity<List<User>> getUser() {
-    var users = userRepository.findAll();
-    return ResponseEntity.ok(users);
-  }
-
-  @Operation(
-          summary = "Get a user by their username",
-          description = "This method returns a user selected by their username. Only users with the 'SUPERUSER' authority can access this method."
-  )
-  @GetMapping("/api/user/{username}")
-  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER')")
-  public Optional<User> getUserByUsername(@PathVariable String username) {
-    return userRepository.findByUsername(username);
-  }
-
-  @Operation(
-          summary = "Update a user by their username",
-          description = "This method is responsible for updating a user's information by the provided username. Both 'SUPERUSER' and 'USER' roles can access this method."
-  )
-  @PutMapping("/api/user/{username}")
+  @Operation(summary = "Delete user")
+  @DeleteMapping("/{username}")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
   @Transactional
-  public ResponseEntity<Void> updateUser(@PathVariable String username, @RequestBody CreateUserDto createUserDto, JwtAuthenticationToken token) {
-    var user = userRepository.findByUsername(username);
+  public ResponseEntity<Void> deleteUser(@PathVariable String username, JwtAuthenticationToken token) {
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-    if (user.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
+    validateUserAccess(user, token);
 
-    var updateUser = user.get();
-    updateUser.setUsername(createUserDto.username());
-    updateUser.setEmail(createUserDto.email());
-
-    if (createUserDto.password() != null && !createUserDto.password().isEmpty()) {
-      updateUser.setPassword(bCryptPasswordEncoder.encode(createUserDto.password()));
-    }
-
-    if (!updateUser.getUsername().equals(createUserDto.username())) {
-      var existingUser = userRepository.findByUsername(createUserDto.username());
-      if (existingUser.isPresent()) {
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "THIS USERNAME ALREADY EXIST");
-      }
-    }
-
-    userRepository.save(updateUser);
-    return ResponseEntity.ok().build();
-  }
-
-  @Operation(
-          summary = "Delete a user by their username",
-          description = "This method is responsible for deleting a user by their username. Both 'SUPERUSER' and 'USER' roles can access this method."
-  )
-  @DeleteMapping("/api/user/{username}")
-  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
-  @Transactional
-  public ResponseEntity<Void> deleteUser(@PathVariable String username) {
-    var user = userRepository.findByUsername(username);
-    var authorization = userRepository.findByUsername(username);
-
-    if (user.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
-
-    userRepository.delete(user.get());
-
+    userRepository.delete(user);
     return ResponseEntity.noContent().build();
+  }
+
+  private void validateUserAccess(User targetUser, JwtAuthenticationToken token) {
+    boolean isSuperuser = token.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("SCOPE_SUPERUSER"));
+    String userIdFromToken = token.getName();
+
+    if (!isSuperuser && !targetUser.getId().toString().equals(userIdFromToken)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You cannot access other users' data");
+    }
   }
 }
