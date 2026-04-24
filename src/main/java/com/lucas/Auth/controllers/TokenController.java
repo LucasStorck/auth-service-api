@@ -30,29 +30,26 @@ public class TokenController {
   private final UserRepository userRepository;
   private final JwtDecoder jwtDecoder;
 
-  public TokenController(JwtService jwtService, AuthenticationManager authenticationManager, UserRepository userRepository, JwtDecoder jwtDecoder) {
+  public TokenController(JwtService jwtService, AuthenticationManager authenticationManager,
+      UserRepository userRepository, JwtDecoder jwtDecoder) {
     this.jwtService = jwtService;
     this.authenticationManager = authenticationManager;
     this.userRepository = userRepository;
     this.jwtDecoder = jwtDecoder;
   }
 
-  @Operation(
-          summary = "User Login",
-          description = "Authenticates user and returns access and refresh tokens."
-  )
+  @Operation(summary = "User Login", description = "Authenticates user and returns access and refresh tokens.")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Successful login."),
-          @ApiResponse(responseCode = "401", description = "Invalid credentials.")
+      @ApiResponse(responseCode = "200", description = "Successful login."),
+      @ApiResponse(responseCode = "401", description = "Invalid credentials.")
   })
   @PostMapping("/api/login")
   public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequest) {
     var authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
-    );
+        new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
 
     var user = userRepository.findByUsername(loginRequest.username())
-            .orElseThrow(() -> new BadCredentialsException("User not found"));
+        .orElseThrow(() -> new BadCredentialsException("User not found"));
 
     var accessToken = jwtService.generateAccessToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
@@ -60,10 +57,7 @@ public class TokenController {
     return ResponseEntity.ok(new LoginResponseDto(accessToken, refreshToken, 300L));
   }
 
-  @Operation(
-          summary = "Refresh Token",
-          description = "Generates a new access token using a valid refresh token."
-  )
+  @Operation(summary = "Refresh Token", description = "Generates a new access token using a valid refresh token.")
   @PostMapping("/api/refresh")
   public ResponseEntity<LoginResponseDto> refresh(@RequestBody RefreshRequestDto refreshRequest) {
     try {
@@ -71,11 +65,10 @@ public class TokenController {
       String userId = jwt.getSubject();
 
       User user = userRepository.findById(UUID.fromString(userId))
-              .orElseThrow(() -> new BadCredentialsException("User not found"));
+          .orElseThrow(() -> new BadCredentialsException("User not found"));
 
       var accessToken = jwtService.generateAccessToken(user);
-      // Opcional: rotacionar o refresh token aqui também
-      
+
       return ResponseEntity.ok(new LoginResponseDto(accessToken, refreshRequest.refreshToken(), 300L));
     } catch (JwtException e) {
       throw new BadCredentialsException("Invalid refresh token");

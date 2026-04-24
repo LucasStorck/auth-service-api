@@ -20,7 +20,8 @@ public class SuperuserConfig implements CommandLineRunner {
 
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  public SuperuserConfig(RoleRepository roleRepository, UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+  public SuperuserConfig(RoleRepository roleRepository, UserRepository userRepository,
+      BCryptPasswordEncoder bCryptPasswordEncoder) {
     this.roleRepository = roleRepository;
     this.userRepository = userRepository;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -34,17 +35,16 @@ public class SuperuserConfig implements CommandLineRunner {
     var userAdmin = userRepository.findByUsername("superuser");
 
     userAdmin.ifPresentOrElse(
-            (user) -> {
-              System.out.println("THE SUPERUSER ALREADY EXISTS");
-            },
-            () -> {
-              var user = new User();
-              user.setUsername("superuser");
-              user.setEmail("superuser@email.com");
-              user.setPassword(bCryptPasswordEncoder.encode("123"));
-              user.setRoles(Set.of(roleSuperuser));
-              userRepository.save(user);
-            }
-    );
+        (user) -> {
+          System.out.println("THE SUPERUSER ALREADY EXISTS");
+        },
+        () -> {
+          var user = new User();
+          user.setUsername("superuser");
+          user.setEmail("superuser@email.com");
+          user.setPassword(bCryptPasswordEncoder.encode("123"));
+          user.setRoles(Set.of(roleSuperuser));
+          userRepository.save(user);
+        });
   }
 }

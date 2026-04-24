@@ -14,18 +14,15 @@ public class SwaggerConfig {
   @Bean
   public OpenAPI openAPI() {
     return new OpenAPI()
-            .info(new Info()
-                    .title("User Authentication and Authorization")
-                    .version("v1.5")
-                    .description("An Authentication and Authorization System with Spring Security and OAuth 2.0")
-            )
-            .components(new Components()
-                    .addSecuritySchemes("bearerAuth", new SecurityScheme()
-                            .type(SecurityScheme.Type.HTTP)
-                            .scheme("bearer")
-                            .bearerFormat("JWT")
-                    )
-            )
-            .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+        .info(new Info()
+            .title("User Authentication and Authorization")
+            .version("v2.0")
+            .description("An Authentication and Authorization System with Spring Security and OAuth 2.0"))
+        .components(new Components()
+            .addSecuritySchemes("bearerAuth", new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")))
+        .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
   }
 }

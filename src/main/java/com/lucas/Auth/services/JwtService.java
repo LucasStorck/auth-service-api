@@ -13,42 +13,42 @@ import java.util.stream.Collectors;
 @Service
 public class JwtService {
 
-    private final JwtEncoder jwtEncoder;
+  private final JwtEncoder jwtEncoder;
 
-    public JwtService(JwtEncoder jwtEncoder) {
-        this.jwtEncoder = jwtEncoder;
-    }
+  public JwtService(JwtEncoder jwtEncoder) {
+    this.jwtEncoder = jwtEncoder;
+  }
 
-    public String generateAccessToken(User user) {
-        Instant now = Instant.now();
-        long expiresIn = 300L; // 5 minutes
+  public String generateAccessToken(User user) {
+    Instant now = Instant.now();
+    long expiresIn = 300L;
 
-        String scope = user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.joining(" "));
+    String scope = user.getRoles().stream()
+        .map(Role::getName)
+        .collect(Collectors.joining(" "));
 
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("auth-service-api")
-                .subject(user.getId().toString())
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(expiresIn))
-                .claim("scope", scope)
-                .build();
+    JwtClaimsSet claims = JwtClaimsSet.builder()
+        .issuer("auth-service-api")
+        .subject(user.getId().toString())
+        .issuedAt(now)
+        .expiresAt(now.plusSeconds(expiresIn))
+        .claim("scope", scope)
+        .build();
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-    }
+    return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+  }
 
-    public String generateRefreshToken(User user) {
-        Instant now = Instant.now();
-        long expiresIn = 3600L * 24; // 24 hours
+  public String generateRefreshToken(User user) {
+    Instant now = Instant.now();
+    long expiresIn = 3600L * 24; // 24 hours
 
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("auth-service-api")
-                .subject(user.getId().toString())
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(expiresIn))
-                .build();
+    JwtClaimsSet claims = JwtClaimsSet.builder()
+        .issuer("auth-service-api")
+        .subject(user.getId().toString())
+        .issuedAt(now)
+        .expiresAt(now.plusSeconds(expiresIn))
+        .build();
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-    }
+    return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+  }
 }

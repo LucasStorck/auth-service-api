@@ -30,7 +30,8 @@ public class UserController {
   private final RoleRepository roleRepository;
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  public UserController(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+  public UserController(UserRepository userRepository, RoleRepository roleRepository,
+      BCryptPasswordEncoder bCryptPasswordEncoder) {
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -45,11 +46,11 @@ public class UserController {
     }
 
     Role userRole = Optional.ofNullable(roleRepository.findByName(RoleType.USER.name()))
-            .orElseGet(() -> {
-              Role newRole = new Role();
-              newRole.setName(RoleType.USER.name());
-              return roleRepository.save(newRole);
-            });
+        .orElseGet(() -> {
+          Role newRole = new Role();
+          newRole.setName(RoleType.USER.name());
+          return roleRepository.save(newRole);
+        });
 
     User newUser = new User();
     newUser.setUsername(createUserDto.username());
@@ -70,13 +71,11 @@ public class UserController {
 
   @Operation(summary = "Get user by username")
   @GetMapping("/{username}")
-  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or #username == authentication.name") // Note: this works if username is the subject
+  @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or #username == authentication.name")
   public ResponseEntity<User> getUserByUsername(@PathVariable String username, JwtAuthenticationToken token) {
-    // Se não for superuser, deve ser o próprio usuário. 
-    // Mas o token subject é o UUID, não o username. Vamos ajustar.
     User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-    
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
     validateUserAccess(user, token);
 
     return ResponseEntity.ok(user);
@@ -86,15 +85,19 @@ public class UserController {
   @PutMapping("/{username}")
   @PreAuthorize("hasAuthority('SCOPE_SUPERUSER') or hasAuthority('SCOPE_USER')")
   @Transactional
-  public ResponseEntity<Void> updateUser(@PathVariable String username, @Valid @RequestBody UpdateUserDto updateUserDto, JwtAuthenticationToken token) {
+  public ResponseEntity<Void> updateUser(@PathVariable String username, @Valid @RequestBody UpdateUserDto updateUserDto,
+      JwtAuthenticationToken token) {
     User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
     validateUserAccess(user, token);
 
-    if (updateUserDto.username() != null) user.setUsername(updateUserDto.username());
-    if (updateUserDto.email() != null) user.setEmail(updateUserDto.email());
-    if (updateUserDto.password() != null) user.setPassword(bCryptPasswordEncoder.encode(updateUserDto.password()));
+    if (updateUserDto.username() != null)
+      user.setUsername(updateUserDto.username());
+    if (updateUserDto.email() != null)
+      user.setEmail(updateUserDto.email());
+    if (updateUserDto.password() != null)
+      user.setPassword(bCryptPasswordEncoder.encode(updateUserDto.password()));
 
     userRepository.save(user);
     return ResponseEntity.ok().build();
@@ -106,7 +109,7 @@ public class UserController {
   @Transactional
   public ResponseEntity<Void> deleteUser(@PathVariable String username, JwtAuthenticationToken token) {
     User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
     validateUserAccess(user, token);
 
@@ -116,7 +119,7 @@ public class UserController {
 
   private void validateUserAccess(User targetUser, JwtAuthenticationToken token) {
     boolean isSuperuser = token.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("SCOPE_SUPERUSER"));
+        .anyMatch(a -> a.getAuthority().equals("SCOPE_SUPERUSER"));
     String userIdFromToken = token.getName();
 
     if (!isSuperuser && !targetUser.getId().toString().equals(userIdFromToken)) {
